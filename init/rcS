@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Add FAT support
+
+## Debian 8.3, Ubuntu 15.10, LinuxMint 17.3, OpenSUSE 42.1
+insmod /lib/modules/0/kernel/fs/nls/nls_utf8.ko
+insmod /lib/modules/0/kernel/fs/nls/nls_cp936.ko
+insmod /lib/modules/0/kernel/fs/fat/fat.ko
+insmod /lib/modules/0/kernel/fs/fat/vfat.ko
+insmod /lib/modules/0/kernel/fs/fat/msdos.ko
+
+## CentOS 7, Fedora 23
+insmod /lib/modules/0/kernel/fs/nls/nls_utf8.ko.xz
+insmod /lib/modules/0/kernel/fs/nls/nls_cp936.ko.xz
+insmod /lib/modules/0/kernel/fs/fat/fat.ko.xz
+insmod /lib/modules/0/kernel/fs/fat/vfat.ko.xz
+insmod /lib/modules/0/kernel/fs/fat/msdos.ko.xz
+
+# Add NTFS support
+
+## Debian 8.3, Ubuntu 15.10, LinuxMint 17.3
+insmod /lib/modules/0/kernel/fs/ntfs/ntfs.ko ## Read only
+
+# Remount root partition as "rw"
+mount -n -o remount,rw /
+
+# Mount partitions according to "/etc/fstab"
+mount -a
+
+# Set hostname
+hostname -F /etc/hostname
+
+# Set up "lo" interface
+ifconfig lo add 127.0.0.1 netmask 255.0.0.0
+
+# Set up Ethernet interface
+
+# Find interface name.
+# Notice the interface name is not always "eth0".
+# On Ubuntu 15.10 the interface name is "enp?s0".
+interface_name=$(\
+    ifconfig -a | grep 'Link encap:Ethernet' | head -n 1 | cut -d ' ' -f 1)
+
+# If Ethernet interface is found
+if [ -n "$interface_name" ]; then
+    # Bring up the interface
+    ifconfig "$interface_name" up
+else
+    # Message
+    echo '# WARNING: Ethernet interface name is not found.' >&2
+fi
+
+# If Ethernet interface is found
+if [ -n "$interface_name" ]; then
+    # If kernel arguments have "udhcpc"
+    if grep -E ' udhcpc( |$)' /proc/cmdline ; then
+        # Message
+        echo '# Run "udhcpc"'
+
+        # Run
+        udhcpc -i "$interface_name"
+    fi
+fi
+
+# If Ethernet interface is found
+if [ -n "$interface_name" ]; then
+    # If kernel arguments have "dropbear"
+    if grep -E ' dropbear( |$)' /proc/cmdline ; then
+        # Message
+        echo '# Run "dropbear"'
+
+        # Run
+        dropbear
+    fi
+fi

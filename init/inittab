@@ -1,0 +1,34 @@
+#
+
+# Set initialization script.
+#
+# Busybox's "init" process will run this script before it spawns ttys.
+#
+# Make sure this file's executable bit is set: chmod 744 /etc/init.d/rcS
+#
+::sysinit:/etc/init.d/rcS
+
+# Spawn ttys
+tty1::respawn:/sbin/getty 38400 tty1
+tty2::respawn:/sbin/getty 38400 tty2
+tty3::respawn:/sbin/getty 38400 tty3
+tty4::respawn:/sbin/getty 38400 tty4
+tty5::respawn:/sbin/getty 38400 tty5
+tty6::respawn:/sbin/getty 38400 tty6
+tty7::respawn:/sbin/getty 38400 tty7
+tty8::respawn:/sbin/getty 38400 tty8
+tty9::respawn:/sbin/getty 38400 tty9
+
+# Command to run when "Ctrl+Alt+Del" is pressed
+::ctrlaltdel:/sbin/reboot
+
+# Command to run when restarting the init process
+::restart:/sbin/init
+
+# Set commands to run before shutdown
+
+# Unmount filesystems
+::shutdown:/bin/umount -a -r
+
+# Turn off swap
+::shutdown:/sbin/swapoff -a
